@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     const client = new postmark.ServerClient(POSTMARK_TOKEN);
 
     await client.sendEmail({
-      From: "Kalidate <invitey@kalidate.com>",
+      From: "Kalidate <invite@kalidate.com>",
       To: email,
       Subject: "You’re invited to Kalidate",
       HtmlBody: `
