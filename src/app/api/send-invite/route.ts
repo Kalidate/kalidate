@@ -1,18 +1,11 @@
 import { NextResponse } from "next/server";
-import Postmark from "postmark";
+import type { NextRequest } from "next/server";
 
+export const dynamic = "force-dynamic"; // ⬅️ critical
 
-// Force Node.js runtime (required for Postmark) 
-export const runtime = "nodejs";
-
-const client = new Postmark.ServerClient(
-  process.env.POSTMARK_SERVER_TOKEN as string
-);
-
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
-    const { email } = body;
+    const { email } = await req.json();
 
     if (!email) {
       return NextResponse.json(
@@ -21,32 +14,36 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = await client.sendEmail({
-      From: "Kalidate <invite@kalidate.com>",
+    const POSTMARK_TOKEN = process.env.POSTMARK_SERVER_TOKEN;
+
+    if (!POSTMARK_TOKEN) {
+      console.error("Missing POSTMARK_SERVER_TOKEN");
+      return NextResponse.json(
+        { error: "Email service not configured" },
+        { status: 500 }
+      );
+    }
+
+    // Import Postmark ONLY at runtime
+    const postmark = await import("postmark");
+    const client = new postmark.ServerClient(POSTMARK_TOKEN);
+
+    await client.sendEmail({
+      From: "Kalidate <no-reply@kalidate.com>",
       To: email,
       Subject: "You’re invited to Kalidate",
       HtmlBody: `
-        <h2>Welcome to Kalidate</h2>
-        <p>You’ve been invited to try Kalidate.</p>
-        <p>More coming soon 🚀</p>
+        <h2>You’ve been invited to Kalidate</h2>
+        <p>Click the link below to get started:</p>
+        <p><a href="https://www.kalidate.com">Accept invitation</a></p>
       `,
-      TextBody:
-        "You’ve been invited to try Kalidate. More coming soon.",
-      MessageStream: "outbound",
     });
 
-    return NextResponse.json({ success: true, result });
-  } catch (error: any) {
-    // 🔴 CRITICAL: log full Postmark error
-    console.error("POSTMARK ERROR FULL:", error);
-    console.error("POSTMARK ERROR RESPONSE:", error?.response?.data);
-
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Send invite error:", error);
     return NextResponse.json(
-      {
-        message: "Postmark send failed",
-        error: error?.message,
-        details: error?.response?.data,
-      },
+      { error: "Failed to send invite" },
       { status: 500 }
     );
   }
