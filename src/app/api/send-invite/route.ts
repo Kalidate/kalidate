@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import Postmark from "postmark";
 
-// Force Node.js runtime (required for Postmark)
+
+// Force Node.js runtime (required for Postmark) 
 export const runtime = "nodejs";
 
 const client = new Postmark.ServerClient(
