@@ -53,6 +53,6 @@ export async function POST(req: NextRequest) {
       details: error?.response?.data ?? error?.message ?? "Unknown error"
     }),
     { status: 500 }
-    );
+   );
   }
 }
