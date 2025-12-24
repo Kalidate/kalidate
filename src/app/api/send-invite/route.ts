@@ -1,21 +1,10 @@
+export const runtime = "nodejs";
+
 import { NextResponse } from "next/server";
 import { ServerClient } from "postmark";
 
-export const dynamic = "force-dynamic"; // ⬅️ CRITICAL
-
 export async function POST(req: Request) {
   try {
-    const token = process.env.POSTMARK_SERVER_TOKEN;
-
-    if (!token) {
-      return NextResponse.json(
-        { error: "Postmark token not configured" },
-        { status: 500 }
-      );
-    }
-
-    const client = new ServerClient(token);
-
     const { email } = await req.json();
 
     if (!email) {
@@ -25,27 +14,20 @@ export async function POST(req: Request) {
       );
     }
 
+    const client = new ServerClient(process.env.POSTMARK_API_TOKEN!);
+
     await client.sendEmail({
-      From: "invite@kalidate.com",
+      From: process.env.POSTMARK_FROM_EMAIL!,
       To: email,
-      Subject: "You’re invited to Kalidate 💜",
-      HtmlBody: `
-        <h2>You're invited to Kalidate</h2>
-        <p>Someone thinks you’re worth the time.</p>
-        <p>
-          <a href="https://kalidate.com">
-            Accept your invite
-          </a>
-        </p>
-      `,
-      MessageStream: "outbound",
+      Subject: "Kalidate test invite",
+      TextBody: "This is a test invite from Kalidate."
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error("Send invite error:", err);
     return NextResponse.json(
-      { error: "Failed to send invite" },
+      { error: "Internal error" },
       { status: 500 }
     );
   }
