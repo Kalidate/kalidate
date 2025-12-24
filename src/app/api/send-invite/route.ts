@@ -1,10 +1,21 @@
 import { NextResponse } from "next/server";
 import { ServerClient } from "postmark";
 
-const client = new ServerClient(process.env.POSTMARK_SERVER_TOKEN!);
+export const dynamic = "force-dynamic"; // ⬅️ CRITICAL
 
 export async function POST(req: Request) {
   try {
+    const token = process.env.POSTMARK_SERVER_TOKEN;
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "Postmark token not configured" },
+        { status: 500 }
+      );
+    }
+
+    const client = new ServerClient(token);
+
     const { email } = await req.json();
 
     if (!email) {
