@@ -40,11 +40,18 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Send invite error:", error);
-    return NextResponse.json(
-      { error: "Failed to send invite" },
-      { status: 500 }
-    );
+  } catch (error: any) {
+  console.error("Send invite failed:", error);
+
+  if (error?.response?.data) {
+    console.error("Postmark response data:", error.response.data);
   }
+
+  return new Response(
+    JSON.stringify({
+      error: "Send invite failed",
+      details: error?.response?.data ?? error?.message ?? "Unknown error"
+    }),
+    { status: 500 }
+  );
 }
