@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     const client = new ServerClient(process.env.POSTMARK_API_TOKEN!);
 
     await client.sendEmail({
-      From: process.env.POSTMARK_FROM_EMAIL!,
+      From: `Kalidate <${process.env.POSTMARK_FROM_EMAIL}>`,
       To: email,
       Subject: "Kalidate test invite",
       TextBody: "This is a test invite from Kalidate."
