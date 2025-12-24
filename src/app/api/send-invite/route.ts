@@ -24,11 +24,16 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (err) {
-    console.error("Send invite error:", err);
-    return NextResponse.json(
-      { error: "Internal error" },
-      { status: 500 }
-    );
-  }
+    catch (error: any) {
+    console.error("POSTMARK ERROR FULL:", error);
+    console.error("POSTMARK ERROR RESPONSE:", error?.response?.data);
+
+  return NextResponse.json(
+    {
+      message: "Postmark error",
+      error: error?.message,
+      details: error?.response?.data,
+    },
+    { status: 500 }
+  );
 }
